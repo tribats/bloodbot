@@ -55,6 +55,7 @@ jobs:
       working-directory: terraform
 
     - name: Update Pull Request
+      permissions: write-all
       uses: actions/github-script@v6
       if: github.event_name == 'pull_request'
       env:
