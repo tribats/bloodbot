@@ -10,6 +10,6 @@ terraform {
 
 resource "null_resource" "example" {
   triggers = {
-    value = "noop"
+    value = "noop-changed"
   }
 }
