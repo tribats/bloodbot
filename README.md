@@ -1,6 +1,6 @@
 # bloodbot
 
-![Deploy workflow](https://github.com/tribats/bloodbot/workflows/deploy/badge.svg)
+![Deploy workflow](https://github.com/tribats/bloodbot/workflows/terraform/badge.svg)
 
 This is my personal website that is published by Github actions to AWS on
 push to the default branch. The site is served via CloudFront from an S3
