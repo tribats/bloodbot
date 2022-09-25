@@ -209,5 +209,5 @@ class App:
 
         if len(removed) > 0 or len(new) > 0:
             self.notification_adapter.notify(removed, new)
+            self.state_adapter.save(matches)
 
-        self.state_adapter.save(matches)
