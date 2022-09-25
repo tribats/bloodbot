@@ -61,7 +61,7 @@ module "lambda_function" {
   function_name = var.lambda_function_name
   description   = "Slack bot to notify when inventory changes"
   handler       = "app.main"
-  runtime       = "python3.9"
+  runtime       = "python3.8"
   publish       = true
 
   source_path = "${path.module}/src"
