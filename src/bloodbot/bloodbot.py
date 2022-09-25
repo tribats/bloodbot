@@ -147,6 +147,8 @@ class FileStateAdapter(StateAdapter):
 
 class S3StateAdapter(StateAdapter):
     def __init__(self, filename: str, bucket: str):
+        self.filename = filename
+        self.bucket = bucket
         self.client = boto3.client("s3")
 
     def load(self):
