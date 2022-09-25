@@ -19,6 +19,9 @@ provider "aws" {
   region = "ca-central-1"
 }
 
+data "aws_region" "current" {}
+data "aws_caller_identity" "current" {}
+
 module "s3_bucket" {
   source = "terraform-aws-modules/s3-bucket/aws"
 
@@ -30,15 +33,37 @@ module "s3_bucket" {
   }
 }
 
+module "eventbridge" {
+  source = "terraform-aws-modules/eventbridge/aws"
+
+  create_bus = false
+
+  rules = {
+    crons = {
+      description         = "Trigger for a Lambda"
+      schedule_expression = "rate(1 hours)"
+    }
+  }
+
+  targets = {
+    crons = [
+      {
+        name  = "lambda-cron"
+        arn   = "arn:aws:lambda:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:function:${var.lambda_function_name}"
+      }
+    ]
+  }
+}
+
 module "lambda_function" {
   source = "terraform-aws-modules/lambda/aws"
 
-  function_name = "bloodbot"
+  function_name = var.lambda_function_name
   description   = "Slack bot to notify when inventory changes"
   handler       = "app.main"
   runtime       = "python3.9"
 
-  source_path = "../src"
+  source_path = "${path.module}/src"
 
   environment_variables = {
     SLACK_WEBHOOK_URL = var.slack_webhook_url
@@ -54,14 +79,14 @@ module "lambda_function" {
     allow_object_actions = {
       effect    = "Allow",
       actions   = ["s3:*Object", "s3:GetObject"],
-      resources = ["{module.s3_bucket.s3_bucket_arn}/*"]
+      resources = ["${module.s3_bucket.s3_bucket_arn}/*"]
     }
   }
 
   allowed_triggers = {
     OneRule = {
       principal  = "events.amazonaws.com"
-      source_arn = "arn:aws:events:ca-central-1:135367859851:rule/RunDaily"
+      source_arn = module.eventbridge.eventbridge_rule_arns.crons
     }
   }
 }

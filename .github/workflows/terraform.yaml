@@ -32,24 +32,20 @@ jobs:
     - name: Terraform Init
       id: init
       run: terraform init
-      working-directory: terraform
 
     # Checks that all Terraform configuration files adhere to a canonical format
     - name: Terraform Format
       id: format
       run: terraform fmt -check
-      working-directory: terraform
 
     - name: Terraform Validate
       id: validate
       run: terraform validate -no-color
-      working-directory: terraform
 
     # Generates an execution plan for Terraform
     - name: Terraform Plan
       id: plan
       run: terraform plan -input=false -no-color
-      working-directory: terraform
 
     - name: Update Pull Request
       uses: actions/github-script@v6
@@ -91,4 +87,3 @@ jobs:
     - name: Terraform Apply
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: terraform apply -auto-approve -input=false
-      working-directory: terraform
