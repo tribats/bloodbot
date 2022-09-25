@@ -39,14 +39,14 @@ module "eventbridge" {
   create_bus = false
 
   rules = {
-    crons = {
+    cron = {
       description         = "Trigger for a Lambda"
-      schedule_expression = "rate(1 hours)"
+      schedule_expression = "rate(1 hour)"
     }
   }
 
   targets = {
-    crons = [
+    cron = [
       {
         name = "lambda-cron"
         arn  = "arn:aws:lambda:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:function:${var.lambda_function_name}"
@@ -62,11 +62,13 @@ module "lambda_function" {
   description   = "Slack bot to notify when inventory changes"
   handler       = "app.main"
   runtime       = "python3.9"
+  publish       = true
 
   source_path = "${path.module}/src"
 
   environment_variables = {
     SLACK_WEBHOOK_URL = var.slack_webhook_url
+    STATE_BUCKET      = var.state_bucket
   }
 
   attach_policy_statements = true
@@ -84,9 +86,9 @@ module "lambda_function" {
   }
 
   allowed_triggers = {
-    OneRule = {
+    cron = {
       principal  = "events.amazonaws.com"
-      source_arn = module.eventbridge.eventbridge_rule_arns.crons
+      source_arn = module.eventbridge.eventbridge_rule_arns.cron
     }
   }
 }
