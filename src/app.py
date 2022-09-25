@@ -4,7 +4,7 @@ from bloodbot.bloodbot import *
 
 def main(event, context):
     slack_webhook_url = os.getenv("SLACK_WEBHOOK_URL")
-    state_adapter = S3StateAdapter(os.getenv("STATE_BUCKET"), "state.json")
+    state_adapter = S3StateAdapter("state.json", os.getenv("STATE_BUCKET"))
     notification_adapter = SlackNotificationAdapter(
         webhook_url=slack_webhook_url
     )
