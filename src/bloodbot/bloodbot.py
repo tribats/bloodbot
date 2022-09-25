@@ -159,7 +159,7 @@ class S3StateAdapter(StateAdapter):
 
     def save(self, state: dict):
         body = json.dumps(state, indent=4)
-        self.client.put_object(Body=body, Bucket=self.bucket, Key=self.key)
+        self.client.put_object(Body=body, Bucket=self.bucket, Key=self.filename)
 
 
 class App:
