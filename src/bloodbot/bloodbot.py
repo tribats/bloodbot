@@ -76,7 +76,7 @@ class SlackNotificationAdapter(NotificationAdapter):
             .replace("<br>", "\n")
         )
 
-    def strip_tags(html):
+    def strip_tags(self, html):
         s = MLStripper()
         s.feed(html)
         return s.get_data()
