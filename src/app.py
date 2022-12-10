@@ -5,9 +5,7 @@ from bloodbot.bloodbot import *
 def main(event, context):
     slack_webhook_url = os.getenv("SLACK_WEBHOOK_URL")
     state_adapter = S3StateAdapter("state.json", os.getenv("STATE_BUCKET"))
-    notification_adapter = SlackNotificationAdapter(
-        webhook_url=slack_webhook_url
-    )
+    notification_adapter = SlackNotificationAdapter(webhook_url=slack_webhook_url)
 
     app = App(
         scraper=Scraper(hostname="www.bloodbrothersbrewing.com"),

@@ -2,6 +2,23 @@ import os
 import json
 import requests
 import boto3
+from io import StringIO
+from html.parser import HTMLParser
+
+
+class MLStripper(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.reset()
+        self.strict = False
+        self.convert_charrefs = True
+        self.text = StringIO()
+
+    def handle_data(self, d):
+        self.text.write(d)
+
+    def get_data(self):
+        return self.text.getvalue()
 
 
 class Scraper:
@@ -53,11 +70,16 @@ class SlackNotificationAdapter(NotificationAdapter):
         self.send(self.format_message(removed, new))
 
     def format_html(self, html):
-        return (
+        return self.strip_tags(
             html.replace("<strong>", "*")
             .replace("</strong>", "*")
             .replace("<br>", "\n")
         )
+
+    def strip_tags(html):
+        s = MLStripper()
+        s.feed(html)
+        return s.get_data()
 
     def format_new(self, beer):
         url = f"https://www.bloodbrothersbrewing.com/collections/beer/products/{beer[1]['handle']}"
@@ -210,4 +232,3 @@ class App:
         if len(removed) > 0 or len(new) > 0:
             self.notification_adapter.notify(removed, new)
             self.state_adapter.save(matches)
-
