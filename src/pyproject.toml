@@ -5,7 +5,7 @@ description = "Periodically check the Blood Brothers Brewery bottle shop for upd
 authors = ["Tristan Bates"]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.8"
 requests = "^2.27.1"
 boto3 = "^1.24.80"
 
