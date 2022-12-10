@@ -57,6 +57,7 @@ module "eventbridge" {
 
 module "lambda_function" {
   source  = "terraform-aws-modules/lambda/aws"
+  version = "~> 4.1.0"
 
   function_name = var.lambda_function_name
   description   = "Slack bot to notify when inventory changes"
@@ -65,10 +66,6 @@ module "lambda_function" {
   publish       = true
 
   source_path = "${path.module}/src"
-
-  provisioner "local-exec" {
-    command = "pip install poetry"
-  }
 
   environment_variables = {
     SLACK_WEBHOOK_URL = var.slack_webhook_url
