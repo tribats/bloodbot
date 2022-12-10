@@ -1,11 +1,11 @@
 [tool.poetry]
 name = "bloodbot"
-version = "0.1.0"
+version = "0.2.0"
 description = "Periodically check the Blood Brothers Brewery bottle shop for updates"
 authors = ["Tristan Bates"]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 requests = "^2.27.1"
 boto3 = "^1.24.80"
 
