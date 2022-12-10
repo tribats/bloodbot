@@ -57,6 +57,7 @@ module "eventbridge" {
 
 module "lambda_function" {
   source  = "terraform-aws-modules/lambda/aws"
+  version = "~> 4.2"
 
   function_name = var.lambda_function_name
   description   = "Slack bot to notify when inventory changes"
