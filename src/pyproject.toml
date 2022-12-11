@@ -10,7 +10,7 @@ requests = "^2.27.1"
 boto3 = "^1.24.80"
 
 [tool.poetry.scripts]
-bbb = "bloodbot:main"
+bloodbot = "app:main"
 
 [tool.poetry.dev-dependencies]
 black = "^22.12.0"

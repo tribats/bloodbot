@@ -64,6 +64,7 @@ module "lambda_function" {
   handler       = "app.main"
   runtime       = "python3.8"
   publish       = true
+  timeout       = 30
 
   source_path = "${path.module}/src"
 

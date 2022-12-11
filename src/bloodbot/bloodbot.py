@@ -1,3 +1,4 @@
+import logging
 import os
 import json
 import requests
@@ -22,11 +23,12 @@ class MLStripper(HTMLParser):
 
 
 class Scraper:
-    def __init__(self, hostname: str):
-        self.hostname = hostname
+    pass
 
-    def products_url(self):
-        return f"https://{self.hostname}/products.json"
+
+class ShopifyScraper:
+    def __init__(self, products_url: str):
+        self.products_url = products_url
 
     def fetch_json(self, url: str):
         try:
@@ -43,7 +45,7 @@ class Scraper:
         return data
 
     def get_products(self):
-        return self.fetch_json(self.products_url())
+        return self.fetch_json(self.products_url)
 
 
 class NotificationAdapter:
@@ -64,10 +66,10 @@ class SlackNotificationAdapter(NotificationAdapter):
         )
 
         if response.status_code != 200:
-            raise Exception(response.status_code, response.text)
+            logging.error("Error sending message to slack")
 
-    def notify(self, removed, new):
-        self.send(self.format_message(removed, new))
+    def notify(self, removed, new, header, link_template):
+        self.send(self.format_message(removed, new, header, link_template))
 
     def format_html(self, html):
         return self.strip_tags(
@@ -81,8 +83,8 @@ class SlackNotificationAdapter(NotificationAdapter):
         s.feed(html)
         return s.get_data()
 
-    def format_new(self, beer):
-        url = f"https://www.bloodbrothersbrewing.com/collections/beer/products/{beer[1]['handle']}"
+    def format_new(self, beer, link_template):
+        url = link_template.replace("{handle}", beer[1]["handle"])
         title = beer[1]["title"]
         body = self.format_html(beer[1]["body_html"])
 
@@ -117,7 +119,7 @@ class SlackNotificationAdapter(NotificationAdapter):
             }
         ]
 
-    def format_message(self, removed: dict, new: dict):
+    def format_message(self, removed: dict, new: dict, header, link_template):
         new_count = len(new)
         new_plural = (
             f"are *{new_count} new* beers" if new_count != 1 else "is *1 new* beer"
@@ -130,13 +132,13 @@ class SlackNotificationAdapter(NotificationAdapter):
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f":beer: :drop_of_blood: *BLOOD BROTHERS BOTTLE SHOP UPDATE ALERT* :drop_of_blood: :beer:\n\nThere {new_plural} and *{old_count} old* {old_plural} been removed.",
+                    "text": f"*{header}*:beer:\n\nThere {new_plural} and *{old_count} old* {old_plural} been removed.",
                 },
             },
             {"type": "divider"},
         ]
         for beer in new.items():
-            blocks = blocks + self.format_new(beer)
+            blocks = blocks + self.format_new(beer, link_template)
 
         if old_count:
             blocks = blocks + self.format_old(removed)
@@ -157,10 +159,18 @@ class FileStateAdapter(StateAdapter):
         self.filename = filename
 
     def load(self):
-        with open(self.filename) as state_file:
-            file_contents = state_file.read()
-            parsed_json = json.loads(file_contents)
-            return parsed_json
+        if not os.path.exists(self.filename):
+            open(self.filename, "w").close()
+            parsed_json = {}
+        else:
+            with open(self.filename) as state_file:
+                file_contents = state_file.read()
+                try:
+                    parsed_json = json.loads(file_contents)
+                except json.decoder.JSONDecodeError:
+                    parsed_json = {}
+
+        return parsed_json
 
     def save(self, state: dict):
         with open(self.filename, "w") as file:
@@ -174,9 +184,12 @@ class S3StateAdapter(StateAdapter):
         self.client = boto3.client("s3")
 
     def load(self):
-        data = self.client.get_object(Bucket=self.bucket, Key=self.filename)
-        contents = data["Body"].read()
-        parsed_json = json.loads(contents.decode("utf-8"))
+        try:
+            data = self.client.get_object(Bucket=self.bucket, Key=self.filename)
+            contents = data["Body"].read()
+            parsed_json = json.loads(contents.decode("utf-8"))
+        except:
+            parsed_json = {}
         return parsed_json
 
     def save(self, state: dict):
@@ -184,7 +197,7 @@ class S3StateAdapter(StateAdapter):
         self.client.put_object(Body=body, Bucket=self.bucket, Key=self.filename)
 
 
-class App:
+class Brewery:
     def __init__(
         self,
         scraper: Scraper,
@@ -192,20 +205,22 @@ class App:
         fields: list,
         state_adapter: StateAdapter,
         notification_adapter: NotificationAdapter,
+        header: str,
+        link_template: str,
     ):
         self.scraper = scraper
         self.filters = filters
         self.fields = fields
         self.state_adapter = state_adapter
         self.notification_adapter = notification_adapter
+        self.header = header
+        self.link_template = link_template
         self.previous_state = self.state_adapter.load()
 
     def match_filters(self, element):
-        for key, match in self.filters.items():
-            if element[key].lower() != match.lower():
-                return False
-
-        return True
+        for key, matches in self.filters.items():
+            if element[key].lower() in matches:
+                return True
 
     def format_element(self, element):
         return {key: element[key] for key in element.keys() & self.fields}
@@ -230,5 +245,7 @@ class App:
         }
 
         if len(removed) > 0 or len(new) > 0:
-            self.notification_adapter.notify(removed, new)
+            self.notification_adapter.notify(
+                removed, new, self.header, self.link_template
+            )
             self.state_adapter.save(matches)
