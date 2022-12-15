@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "bloodbot"
-version = "0.1.0"
+version = "0.2.0"
 description = "Periodically check the Blood Brothers Brewery bottle shop for updates"
 authors = ["Tristan Bates"]
 
@@ -10,9 +10,10 @@ requests = "^2.27.1"
 boto3 = "^1.24.80"
 
 [tool.poetry.scripts]
-bbb = "bloodbot:main"
+bloodbot = "app:main"
 
 [tool.poetry.dev-dependencies]
+black = "^22.12.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

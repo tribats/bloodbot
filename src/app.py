@@ -2,19 +2,77 @@ import os
 from bloodbot.bloodbot import *
 
 
-def main(event, context):
+def main(event={}, context={}):
     slack_webhook_url = os.getenv("SLACK_WEBHOOK_URL")
-    state_adapter = S3StateAdapter("state.json", os.getenv("STATE_BUCKET"))
-    notification_adapter = SlackNotificationAdapter(
-        webhook_url=slack_webhook_url
-    )
+    notification_adapter = SlackNotificationAdapter(webhook_url=slack_webhook_url)
 
-    app = App(
-        scraper=Scraper(hostname="www.bloodbrothersbrewing.com"),
-        filters={"product_type": "beer"},
-        fields=["title", "published_at", "images", "body_html", "handle"],
-        state_adapter=state_adapter,
-        notification_adapter=notification_adapter,
-    )
+    breweries = [
+        Brewery(
+            scraper=ShopifyScraper(
+                products_url="https://bellwoodsbrewery.com/collections/beer/products.json"
+            ),
+            filters={"product_type": ["beer"]},
+            fields=["title", "published_at", "images", "body_html", "handle"],
+            state_adapter=S3StateAdapter(
+                "bellwoodsbrewery.com.json", os.getenv("STATE_BUCKET")
+            ),
+            notification_adapter=notification_adapter,
+            header="Bellwoods",
+            link_template="https://bellwoodsbrewery.com/collections/beer/products/{handle}",
+        ),
+        Brewery(
+            scraper=ShopifyScraper(
+                products_url="https://fanshop.leftfieldbrewery.ca/collections/beer/products.json"
+            ),
+            filters={"product_type": ["misc", "packaged"]},
+            fields=["title", "published_at", "images", "body_html", "handle"],
+            state_adapter=S3StateAdapter(
+                "leftfieldbrewery.ca.json", os.getenv("STATE_BUCKET")
+            ),
+            notification_adapter=notification_adapter,
+            header="Left Field",
+            link_template="https://fanshop.leftfieldbrewery.ca/collections/beer/products/{handle}",
+        ),
+        Brewery(
+            scraper=ShopifyScraper(
+                products_url="https://burdockbrewery.com/collections/beer/products.json"
+            ),
+            filters={"product_type": ["beer"]},
+            fields=["title", "published_at", "images", "body_html", "handle"],
+            state_adapter=S3StateAdapter(
+                "burdockbrewery.com.json", os.getenv("STATE_BUCKET")
+            ),
+            notification_adapter=notification_adapter,
+            header="Burdock",
+            link_template="https://burdockbrewery.com/collections/beer/products/{handle}",
+        ),
+        Brewery(
+            scraper=ShopifyScraper(
+                products_url="https://collectiveartsontario.com/products.json"
+            ),
+            filters={"product_type": ["beer", "spirits & cocktails", "beer & cider"]},
+            fields=["title", "published_at", "images", "body_html", "handle"],
+            state_adapter=S3StateAdapter(
+                "collectiveartsontario.com.json", os.getenv("STATE_BUCKET")
+            ),
+            notification_adapter=notification_adapter,
+            header="Collective Arts",
+            link_template="https://collectiveartsontario.com/collections/beer/products/{handle}",
+        ),
+        Brewery(
+            scraper=ShopifyScraper(
+                products_url="https://www.bloodbrothersbrewing.com/collections/beer/products.json"
+            ),
+            filters={"product_type": ["beer"]},
+            fields=["title", "published_at", "images", "body_html", "handle"],
+            state_adapter=S3StateAdapter(
+                "bloodbrothersbrewing.com.json", os.getenv("STATE_BUCKET")
+            ),
+            notification_adapter=notification_adapter,
+            header=":drop_of_blood: Blood Brothers",
+            link_template="https://www.bloodbrothersbrewing.com/collections/beer/products/{handle}",
+        ),
+    ]
 
-    app.check_for_update()
+    for brewery in breweries:
+        brewery.check_for_update()

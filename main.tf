@@ -41,7 +41,7 @@ module "eventbridge" {
   rules = {
     cron = {
       description         = "Trigger for a Lambda"
-      schedule_expression = "rate(1 hour)"
+      schedule_expression = "rate(2 hours)"
     }
   }
 
@@ -56,13 +56,15 @@ module "eventbridge" {
 }
 
 module "lambda_function" {
-  source = "terraform-aws-modules/lambda/aws"
+  source  = "terraform-aws-modules/lambda/aws"
+  version = "~> 4.1.0"
 
   function_name = var.lambda_function_name
   description   = "Slack bot to notify when inventory changes"
   handler       = "app.main"
   runtime       = "python3.8"
   publish       = true
+  timeout       = 30
 
   source_path = "${path.module}/src"
 
