@@ -9,6 +9,19 @@ def main(event={}, context={}):
     breweries = [
         Brewery(
             scraper=ShopifyScraper(
+                products_url="https://shortfingerbrewing.com/collections/sfbc-bottle-shop-online/products.json"
+            ),
+            filters={},
+            fields=["title", "published_at", "images", "body_html", "handle"],
+            state_adapter=S3StateAdapter(
+                "shortfingerbrewing.com.json", os.getenv("STATE_BUCKET")
+            ),
+            notification_adapter=notification_adapter,
+            header="Short Finger",
+            link_template="https://shortfingerbrewing.com/collections/sfbc-bottle-shop-online/products/{handle}",
+        ),
+        Brewery(
+            scraper=ShopifyScraper(
                 products_url="https://bellwoodsbrewery.com/collections/beer/products.json"
             ),
             filters={"product_type": ["beer"]},
