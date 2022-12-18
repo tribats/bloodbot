@@ -218,6 +218,9 @@ class Brewery:
         self.previous_state = self.state_adapter.load()
 
     def match_filters(self, element):
+        if len(self.filters.items()) == 0:
+            return True
+
         for key, matches in self.filters.items():
             if element[key].lower() in matches:
                 return True
