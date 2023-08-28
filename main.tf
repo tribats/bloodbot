@@ -65,7 +65,12 @@ module "lambda_function" {
   publish       = true
   timeout       = 30
 
-  source_path = "${path.module}/src"
+  source_path = [
+    {
+      path = "${path.module}/src",
+      pip_requirements = true
+    }
+  ]
 
   environment_variables = {
     SLACK_WEBHOOK_URL = var.slack_webhook_url
