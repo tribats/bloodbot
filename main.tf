@@ -10,7 +10,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 4.0"
+      version = "~> 5.0"
     }
   }
 }
@@ -57,7 +57,6 @@ module "eventbridge" {
 
 module "lambda_function" {
   source  = "terraform-aws-modules/lambda/aws"
-  version = "~> 4.1.0"
 
   function_name = var.lambda_function_name
   description   = "Slack bot to notify when inventory changes"
