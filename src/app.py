@@ -9,6 +9,32 @@ def main(event={}, context={}):
     breweries = [
         Brewery(
             scraper=ShopifyScraper(
+                products_url="https://kensington-brewing.myshopify.com/collections/local-craft-beer/products.json"
+            ),
+            filters={},
+            fields=["title", "published_at", "images", "body_html", "handle"],
+            state_adapter=S3StateAdapter(
+                "kensington-brewing.myshopify.com.json", os.getenv("STATE_BUCKET")
+            ),
+            notification_adapter=notification_adapter,
+            header="Kensington Brewing",
+            link_template="https://kensington-brewing.myshopify.com/collections/local-craft-beer/products/{handle}",
+        ),
+        Brewery(
+            scraper=ShopifyScraper(
+                products_url="https://indiealehouse.com/collections/online-bottle-shop/products.json"
+            ),
+            filters={},
+            fields=["title", "published_at", "images", "body_html", "handle"],
+            state_adapter=S3StateAdapter(
+                "indiealehouse.com.json", os.getenv("STATE_BUCKET")
+            ),
+            notification_adapter=notification_adapter,
+            header="Indie Ale House",
+            link_template="https://indiealehouse.com/collections/online-bottle-shop/products/{handle}",
+        ),
+        Brewery(
+            scraper=ShopifyScraper(
                 products_url="https://shortfingerbrewing.com/collections/sfbc-bottle-shop-online/products.json"
             ),
             filters={},
