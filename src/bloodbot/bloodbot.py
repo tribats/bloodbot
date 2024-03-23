@@ -88,6 +88,11 @@ class SlackNotificationAdapter(NotificationAdapter):
         title = beer[1]["title"]
         body = self.format_html(beer[1]["body_html"])
 
+        try:
+            image_url = beer[1]["images"][0]["src"]
+        except IndexError:
+            image_url = "https://placehold.co/50x50?text=Beer"
+
         blocks = [
             {
                 "type": "section",
@@ -97,7 +102,7 @@ class SlackNotificationAdapter(NotificationAdapter):
                 },
                 "accessory": {
                     "type": "image",
-                    "image_url": beer[1]["images"][0]["src"],
+                    "image_url": image_url,
                     "alt_text": title,
                 },
             },

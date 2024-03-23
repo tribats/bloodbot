@@ -67,7 +67,8 @@ module "lambda_function" {
 
   source_path = [
     {
-      path = "${path.module}/src",
+      path = "${path.module}/src"
+      poetry_install = false
       pip_requirements = true
     }
   ]
@@ -96,11 +97,5 @@ module "lambda_function" {
       principal  = "events.amazonaws.com"
       source_arn = module.eventbridge.eventbridge_rule_arns.cron
     }
-  }
-}
-
-resource "null_resource" "example" {
-  triggers = {
-    value = "noop-changed"
   }
 }

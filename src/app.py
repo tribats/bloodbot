@@ -6,7 +6,21 @@ def main(event={}, context={}):
     slack_webhook_url = os.getenv("SLACK_WEBHOOK_URL")
     notification_adapter = SlackNotificationAdapter(webhook_url=slack_webhook_url)
 
+    logging.info("Loading config...")
     breweries = [
+        Brewery(
+            scraper=ShopifyScraper(
+                products_url="https://slakebrewing.com/collections/beer/products.json"
+            ),
+            filters={"product_type": ["beer"]},
+            fields=["title", "published_at", "images", "body_html", "handle"],
+            state_adapter=S3StateAdapter(
+                "slakebrewing.com.json", os.getenv("STATE_BUCKET")
+            ),
+            notification_adapter=notification_adapter,
+            header="Slake",
+            link_template="https://slakebrewing.com/collections/beer/products/{handle}",
+        ),
         Brewery(
             scraper=ShopifyScraper(
                 products_url="https://kensington-brewing.myshopify.com/collections/local-craft-beer/products.json"
@@ -111,20 +125,9 @@ def main(event={}, context={}):
             header=":drop_of_blood: Blood Brothers",
             link_template="https://www.bloodbrothersbrewing.com/collections/beer/products/{handle}",
         ),
-        Brewery(
-            scraper=ShopifyScraper(
-                products_url="https://slakebrewing.com/collections/beer/products.json"
-            ),
-            filters={"product_type": ["Beer"]},
-            fields=["title", "published_at", "images", "body_html", "handle"],
-            state_adapter=S3StateAdapter(
-                "slakebrewing.com.json", os.getenv("STATE_BUCKET")
-            ),
-            notification_adapter=notification_adapter,
-            header="Slake",
-            link_template="https://slakebrewing.com/collections/beer/products/{handle}",
-        ),
     ]
+
+    logging.info(f"{len(breweries)} breweries configured")
 
     for brewery in breweries:
         brewery.check_for_update()

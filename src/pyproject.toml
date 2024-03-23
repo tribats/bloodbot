@@ -6,8 +6,8 @@ authors = ["Tristan Bates"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
-requests = "^2.27.1"
-boto3 = "^1.24.80"
+requests = "^2.31.0"
+boto3 = "^1.34.69"
 
 [tool.poetry.scripts]
 bloodbot = "app:main"
